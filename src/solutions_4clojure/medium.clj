@@ -151,3 +151,66 @@
                  [(key e) (reduce f (map second (val e)))]
                  [(key e) (second (first (val e)))]))
              (group-by first (apply concat m)))))
+
+;; 70. Word Sorting
+;; Write a function that splits a sentence up into a sorted list of words. Capitalization should not affect sort order and punctuation should be ignored.
+;; (= (__  "Have a nice day.")
+;;    ["a" "day" "Have" "nice"])
+;; (= (__  "Clojure is a fun language!")
+;;    ["a" "Clojure" "fun" "is" "language"])
+;; (= (__  "Fools fall for foolish follies.")
+;;    ["fall" "follies" "foolish" "Fools" "for"])
+(defn word-sorting [s]
+  (into []
+        (sort-by clojure.string/lower-case
+                 (clojure.string/split (apply str
+                                              (take (dec (count s)) s))
+                                       #"\s"))))
+
+;; 74. Filter Perfect Squares
+;; Given a string of comma separated integers, write a function which returns a new comma separated string that only contains the numbers which are perfect squares.
+;; (= (__ "4,5,6,7,8,9") "4,9")
+;; (= (__ "15,16,25,36,37") "16,25,36")
+(defn filter-perfect-squares [s]
+  (letfn [(perfect-square? [n]
+            (== (Math/sqrt n) (int (Math/sqrt n))))]
+    (clojure.string/join ","
+                         (filter perfect-square?
+                                 (map read-string (clojure.string/split s #","))))))
+
+;; 75. Euler's Totient Function
+;; Two numbers are coprime if their greatest common divisor equals 1. Euler's totient function f(x) is defined as the number of positive integers less than x which are coprime to x. The special case f(1) equals 1. Write a function which calculates Euler's totient function.
+;; (= (__ 1) 1)
+;; (= (__ 10) (count '(1 3 7 9)) 4)
+;; (= (__ 40) 16)
+;; (= (__ 99) 60)
+(defn eulers-totient-function [n]
+  (letfn [(gcd [a b]
+            (if (= b 0)
+              a
+              (recur b (mod a b))))]
+    (count
+      (filter #(= 1 (gcd n %)) (range n)))))
+
+;; 76. Intro to Trampoline
+;; The trampoline function takes a function f and a variable number of parameters. Trampoline calls f with any parameters that were supplied. If f returns a function, trampoline calls that function with no arguments. This is repeated, until the return value is not a function, and then trampoline returns that non-function value. This is useful for implementing mutually recursive algorithms in a way that won't consume the stack.
+;; (= __
+;;    (letfn
+;;      [(foo [x y] #(bar (conj x y) y))
+;;       (bar [x y] (if (> (last x) 10)
+;;                    x
+;;                    #(foo x (+ 2 y))))]
+;;      (trampoline foo [] 1)))
+(def intro-to-trampoline [1 3 5 7 9 11])
+
+;; 77. Anagram Finder
+;; Write a function which finds all the anagrams in a vector of words. A word x is an anagram of word y if all the letters in x can be rearranged in a different order to form y. Your function should return a set of sets, where each sub-set is a group of words which are anagrams of each other. Each sub-set should have at least two words. Words without any anagrams should not be included in the result.
+;; (= (__ ["meat" "mat" "team" "mate" "eat"])
+;;    #{#{"meat" "team" "mate"}})
+;; (= (__ ["veer" "lake" "item" "kale" "mite" "ever"])
+;;    #{#{"veer" "ever"} #{"lake" "kale"} #{"mite" "item"}})
+(defn anagram-finder [s]
+  (->> (group-by sort s)
+       (filter #(> (count (val %)) 1))
+       (map #(set (val %)))
+       (set)))

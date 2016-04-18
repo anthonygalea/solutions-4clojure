@@ -76,3 +76,36 @@
          {1 7, 2 10, 3 15}))
   (is (= (merge-with-a-function concat {:a [3], :b [6]} {:a [4 5], :c [8 9]} {:b [7]})
          {:a [3 4 5], :b [6 7], :c [8 9]})))
+
+(deftest word-sorting-test
+  (is (= (word-sorting "Have a nice day.")
+         ["a" "day" "Have" "nice"]))
+  (is (= (word-sorting "Clojure is a fun language!")
+         ["a" "Clojure" "fun" "is" "language"]))
+  (is (= (word-sorting "Fools fall for foolish follies.")
+         ["fall" "follies" "foolish" "Fools" "for"])))
+
+(deftest filter-perfect-squares-test
+  (is (= (filter-perfect-squares "4,5,6,7,8,9") "4,9"))
+  (is (= (filter-perfect-squares "15,16,25,36,37") "16,25,36")))
+
+(deftest eulers-totient-function-test
+  (is (= (eulers-totient-function 1) 1))
+  (is (= (eulers-totient-function 10) (count '(1 3 7 9)) 4))
+  (is (= (eulers-totient-function 40) 16))
+  (is (= (eulers-totient-function 99) 60)))
+
+(deftest intro-to-trampoline-test
+  (is (= intro-to-trampoline
+         (letfn
+           [(foo [x y] #(bar (conj x y) y))
+            (bar [x y] (if (> (last x) 10)
+                         x
+                         #(foo x (+ 2 y))))]
+           (trampoline foo [] 1)))))
+
+(deftest anagram-finder-test
+  (is (= (anagram-finder ["meat" "mat" "team" "mate" "eat"])
+         #{#{"meat" "team" "mate"}}))
+  (is (= (anagram-finder ["veer" "lake" "item" "kale" "mite" "ever"])
+         #{#{"veer" "ever"} #{"lake" "kale"} #{"mite" "item"}})))
