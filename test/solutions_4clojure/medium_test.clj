@@ -109,3 +109,42 @@
          #{#{"meat" "team" "mate"}}))
   (is (= (anagram-finder ["veer" "lake" "item" "kale" "mite" "ever"])
          #{#{"veer" "ever"} #{"lake" "kale"} #{"mite" "item"}})))
+
+(deftest reimplement-trampoline-test
+  (is (= (letfn [(triple [x] #(sub-two (* 3 x)))
+                 (sub-two [x] #(stop? (- x 2)))
+                 (stop? [x] (if (> x 50) x #(triple x)))]
+           (reimplement-trampoline triple 2))
+         82))
+  (is (= (letfn [(my-even? [x] (if (zero? x) true #(my-odd? (dec x))))
+                 (my-odd? [x] (if (zero? x) false #(my-even? (dec x))))]
+           (map (partial reimplement-trampoline my-even?) (range 6)))
+         [true false true false true false])))
+
+(deftest perfect-numbers-test
+  (is (= (perfect-numbers 6) true))
+  (is (= (perfect-numbers 7) false))
+  (is (= (perfect-numbers 496) true))
+  (is (= (perfect-numbers 500) false))
+  (is (= (perfect-numbers 8128) true)))
+
+(deftest power-set-test
+  (is (= (power-set #{1 :a}) #{#{1 :a} #{:a} #{} #{1}}))
+  (is (= (power-set #{}) #{#{}}))
+  (is (= (power-set #{1 2 3})
+         #{#{} #{1} #{2} #{3} #{1 2} #{1 3} #{2 3} #{1 2 3}}))
+  (is (= (count (power-set (into #{} (range 10)))) 1024)))
+
+(deftest happy-numbers-test
+  (is (= (happy-numbers 7) true))
+  (is (= (happy-numbers 986543210) true))
+  (is (= (happy-numbers 2) false))
+  (is (= (happy-numbers 3) false)))
+
+(deftest partially-flatten-a-sequence-test
+  (is (= (partially-flatten-a-sequence [["Do"] ["Nothing"]])
+         [["Do"] ["Nothing"]]))
+  (is (= (partially-flatten-a-sequence [[[[:a :b]]] [[:c :d]] [:e :f]])
+         [[:a :b] [:c :d] [:e :f]]))
+  (is (= (partially-flatten-a-sequence '((1 2) ((3 4) ((((5 6)))))))
+         '((1 2) (3 4) (5 6)))))

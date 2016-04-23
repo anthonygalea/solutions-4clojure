@@ -214,3 +214,88 @@
        (filter #(> (count (val %)) 1))
        (map #(set (val %)))
        (set)))
+
+;; 78. Reimplement Trampoline
+;; Reimplement the function described in "Intro to Trampoline".
+;; (= (letfn [(triple [x] #(sub-two (* 3 x)))
+;;            (sub-two [x] #(stop?(- x 2)))
+;;            (stop? [x] (if (> x 50) x #(triple x)))]
+;;      (__ triple 2))
+;;    82)
+;; (= (letfn [(my-even? [x] (if (zero? x) true #(my-odd? (dec x))))
+;;            (my-odd? [x] (if (zero? x) false #(my-even? (dec x))))]
+;;      (map (partial __ my-even?) (range 6)))
+;;    [true false true false true false])
+(defn reimplement-trampoline
+  ([f]
+   (let [r (f)]
+     (if (fn? r)
+       (recur r)
+       r)))
+  ([f & args]
+   (reimplement-trampoline #(apply f args))))
+
+;; 80. Perfect Numbers
+;; A number is "perfect" if the sum of its divisors equal the number itself. 6 is a perfect number because 1+2+3=6. Write a function which returns true for perfect numbers and false otherwise.
+;; (= (__ 6) true)
+;; (= (__ 7) false)
+;; (= (__ 496) true)
+;; (= (__ 500) false)
+;; (= (__ 8128) true)
+(defn perfect-numbers [n]
+  (= n
+     (reduce +
+             (filter #(zero? (mod n %))
+                     (range 1 (inc (/ n 2)))))))
+
+;; 85. Power Set
+;; Write a function which generates the power set of a given set. The power set of a set x is the set of all subsets of x, including the empty set and x itself.
+;; (= (__ #{1 :a}) #{#{1 :a} #{:a} #{} #{1}})
+;; (= (__ #{}) #{#{}})
+;; (= (__ #{1 2 3})
+;;    #{#{} #{1} #{2} #{3} #{1 2} #{1 3} #{2 3} #{1 2 3}})
+;; (= (count (__ (into #{} (range 10)))) 1024)
+(defn power-set [s]
+  (reduce (fn [result next]
+            (clojure.set/union result
+                               (map #(conj % next)
+                                    result)))
+          #{#{}}
+          s))
+
+;; 86. Happy numbers
+;; Happy numbers are positive integers that follow a particular formula: take each individual digit, square it, and then sum the squares to get a new number. Repeat with the new number and eventually, you might get to a number whose squared sum is 1. This is a happy number. An unhappy number (or sad number) is one that loops endlessly. Write a function that determines if a number is happy or not.
+;; (= (__ 7) true)
+;; (= (__ 986543210) true)
+;; (= (__ 2) false)
+;; (= (__ 3) false)
+(defn happy-numbers [x]
+  {:pre [(pos? x)]}
+  (letfn [(sum-of-square-digits [n]
+            (->> (str n)
+                 (map #(Character/digit % 10))
+                 (map #(* % %))
+                 (reduce +)))]
+    (loop [r #{}
+           i x]
+      (let [s (sum-of-square-digits i)]
+        (cond
+          (= s 1) true
+          (contains? r s) false
+          :else (recur (conj r s) s))))))
+
+;; 93. Partially Flatten a Sequence
+;; Write a function which flattens any nested combination of sequential things (lists, vectors, etc.), but maintains the lowest level sequential items. The result should be a sequence of sequences with only one level of nesting.
+;; (= (__ [["Do"] ["Nothing"]])
+;;    [["Do"] ["Nothing"]])
+;; (= (__ [[[[:a :b]]] [[:c :d]] [:e :f]])
+;;    [[:a :b] [:c :d] [:e :f]])
+;; (= (__ '((1 2)((3 4)((((5 6)))))))
+;;    '((1 2)(3 4)(5 6)))
+(defn partially-flatten-a-sequence [s]
+  (reduce (fn [result x]
+            (concat result
+                    (if (every? #(not (coll? %)) x)
+                      (vector x)
+                      (partially-flatten-a-sequence x))))
+          [] s))
