@@ -299,3 +299,67 @@
                       (vector x)
                       (partially-flatten-a-sequence x))))
           [] s))
+
+;; 98. Equivalence Classes
+;; A function f defined on a domain D induces an equivalence relation on D, as follows: a is equivalent to b with respect to f if and only if (f a) is equal to (f b). Write a function with arguments f and D that computes the equivalence classes of D with respect to f.
+;; (= (__ #(* % %) #{-2 -1 0 1 2})
+;;    #{#{0} #{1 -1} #{2 -2}})
+;; (= (__ #(rem % 3) #{0 1 2 3 4 5 })
+;;    #{#{0 3} #{1 4} #{2 5}})
+;; (= (__ identity #{0 1 2 3 4})
+;;    #{#{0} #{1} #{2} #{3} #{4}})
+;; (= (__ (constantly true) #{0 1 2 3 4})
+;;    #{#{0 1 2 3 4}})
+(defn equivalence-classes [f d]
+  (set
+    (map #(set (map first %))
+         (vals
+           (group-by second
+                     (map #(list % (f %)) d))))))
+
+;; 102. intoCamelCase
+;; When working with java, you often need to create an object with fieldsLikeThis, but you'd rather work with a hashmap that has :keys-like-this until it's time to convert. Write a function which takes lower-case hyphen-separated strings and converts them to camel-case strings.
+;; (= (__ "something") "something")
+;; (= (__ "multi-word-key") "multiWordKey")
+;; (= (__ "leaveMeAlone") "leaveMeAlone")
+(defn into-camel-case [s]
+  (if-not (nil? (re-find #"-" s))
+    (let [split (clojure.string/split s #"-")]
+      (str
+        (first split)
+        (clojure.string/join
+          (map clojure.string/capitalize (rest split)))))
+    s))
+
+
+;; 105. Identify keys and values
+;; Given an input sequence of keywords and numbers, create a map such that each key in the map is a keyword, and the value is a sequence of all the numbers (if any) between it and the next keyword in the sequence.
+;; (= {} (__ []))
+;; (= {:a [1]} (__ [:a 1]))
+;; (= {:a [1], :b [2]} (__ [:a 1, :b 2]))
+;; (= {:a [1 2 3], :b [], :c [4]} (__ [:a 1 2 3 :b :c 4]))
+(defn identify-keys-and-values [s]
+  (into {}
+        (map #(vector (first %) (into [] (rest %)))
+             (let [new (atom false)]
+               (partition-by #(if (keyword? %)
+                               (reset! new (not @new))
+                               @new)
+                             s)))))
+
+;; 108. Lazy Searching
+;; Given any number of sequences, each sorted from smallest to largest, find the smallest single number which appears in all of the sequences. The sequences may be infinite, so be careful to search lazily.
+;; (= 3 (__ [3 4 5]))
+;; (= 4 (__ [1 2 3 4 5 6 7] [0.5 3/2 4 19]))
+;; (= 7 (__ (range) (range 0 100 7/6) [2 3 5 7 11 13]))
+;; (= 64 (__ (map #(* % % %) (range)) ;; perfect cubes
+;;           (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
+;;           (iterate inc 20))) ;; at least as large as 20
+(defn lazy-searching [& sequences]
+  (if (apply = (map first sequences))
+    (ffirst sequences)
+    (let [sorted-sequences (sort-by first sequences)]
+      (apply lazy-searching
+             (cons (rest (first sorted-sequences))
+                   (rest sorted-sequences))))))
+

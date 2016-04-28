@@ -148,3 +148,33 @@
          [[:a :b] [:c :d] [:e :f]]))
   (is (= (partially-flatten-a-sequence '((1 2) ((3 4) ((((5 6)))))))
          '((1 2) (3 4) (5 6)))))
+
+(deftest equivalence-classes-test
+  (is (= (equivalence-classes #(* % %) #{-2 -1 0 1 2})
+         #{#{0} #{1 -1} #{2 -2}}))
+  (is (= (equivalence-classes #(rem % 3) #{0 1 2 3 4 5})
+         #{#{0 3} #{1 4} #{2 5}}))
+  (is (= (equivalence-classes identity #{0 1 2 3 4})
+         #{#{0} #{1} #{2} #{3} #{4}}))
+  (is (= (equivalence-classes (constantly true) #{0 1 2 3 4})
+         #{#{0 1 2 3 4}})))
+
+(deftest into-camel-case-test
+  (is (= (into-camel-case "something") "something"))
+  (is (= (into-camel-case "multi-word-key") "multiWordKey"))
+  (is (= (into-camel-case "leaveMeAlone") "leaveMeAlone")))
+
+(deftest identify-keys-and-values-test
+  (is (= {} (identify-keys-and-values [])))
+  (is (= {:a [1]} (identify-keys-and-values [:a 1])))
+  (is (= {:a [1], :b [2]} (identify-keys-and-values [:a 1, :b 2])))
+  (is (= {:a [1 2 3], :b [], :c [4]} (identify-keys-and-values [:a 1 2 3 :b :c 4]))))
+
+(deftest lazy-searching-test
+  (is (= 3 (lazy-searching [3 4 5])))
+  (is (= 4 (lazy-searching [1 2 3 4 5 6 7] [0.5 3/2 4 19])))
+  (is (= 7 (lazy-searching (range) (range 0 100 7/6) [2 3 5 7 11 13])))
+  (is (= 64 (lazy-searching (map #(* % % %) (range))        ;; perfect cubes
+                            (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
+                            (iterate inc 20)))))            ;; at least as large as 20
+
