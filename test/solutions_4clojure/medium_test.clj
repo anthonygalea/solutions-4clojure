@@ -178,3 +178,31 @@
                             (filter #(zero? (bit-and % (dec %))) (range)) ;; powers of 2
                             (iterate inc 20)))))            ;; at least as large as 20
 
+(deftest sequence-of-pronunciations-test
+  (is (= [[1 1] [2 1] [1 2 1 1]] (take 3 (sequence-of-pronounciations [1]))))
+  (is (= [3 1 2 4] (first (sequence-of-pronounciations [1 1 1 4 4]))))
+  (is (= [1 1 1 3 2 1 3 2 1 1] (nth (sequence-of-pronounciations [1]) 6)))
+  (is (= 338 (count (nth (sequence-of-pronounciations [3 2]) 15)))))
+
+(deftest global-take-while-test
+  (is (= [2 3 5 7 11 13]
+         (global-take-while 4 #(= 2 (mod % 3))
+                            [2 3 5 7 11 13 17 19 23])))
+  (is (= ["this" "is" "a" "sentence"]
+         (global-take-while 3 #(some #{\i} %)
+                            ["this" "is" "a" "sentence" "i" "wrote"])))
+  (is (= ["this" "is"]
+         (global-take-while 1 #{"a"}
+                            ["this" "is" "a" "sentence" "i" "wrote"]))))
+
+(deftest the-balance-of-n-test
+  (is (= true (the-balance-of-n 11)))
+  (is (= true (the-balance-of-n 121)))
+  (is (= false (the-balance-of-n 123)))
+  (is (= true (the-balance-of-n 0)))
+  (is (= false (the-balance-of-n 88099)))
+  (is (= true (the-balance-of-n 89098)))
+  (is (= true (the-balance-of-n 89089)))
+  (is (= (take 20 (filter the-balance-of-n (range))))
+      [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101]))
+

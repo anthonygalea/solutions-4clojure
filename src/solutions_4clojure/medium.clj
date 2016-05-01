@@ -363,3 +363,56 @@
              (cons (rest (first sorted-sequences))
                    (rest sorted-sequences))))))
 
+;; 110. Sequence of pronunciations
+;; Write a function that returns a lazy sequence of "pronunciations" of a sequence of numbers. A pronunciation of each element in the sequence consists of the number of repeating identical numbers and the number itself. For example, [1 1] is pronounced as [2 1] ("two ones"), which in turn is pronounced as [1 2 1 1] ("one two, one one").
+;; Your function should accept an initial sequence of numbers, and return an infinite lazy sequence of pronunciations, each element being a pronunciation of the previous element.
+;; (= [[1 1] [2 1] [1 2 1 1]] (take 3 (__ [1])))
+;; (= [3 1 2 4] (first (__ [1 1 1 4 4])))
+;; (= [1 1 1 3 2 1 3 2 1 1] (nth (__ [1]) 6))
+;; (= 338 (count (nth (__ [3 2]) 15)))
+(defn sequence-of-pronounciations [s]
+  (let [n (flatten
+            (map #(vector (count %) (first %))
+                 (partition-by identity s)))]
+    (lazy-seq
+      (cons n (sequence-of-pronounciations n)))))
+
+;; 114. Global take-while
+;; take-while is great for filtering sequences, but it limited: you can only examine a single item of the sequence at a time. What if you need to keep track of some state as you go over the sequence?
+;; Write a function which accepts an integer n, a predicate p, and a sequence. It should return a lazy sequence of items in the list up to, but not including, the nth item that satisfies the predicate.
+;; (= [2 3 5 7 11 13]
+;;    (__ 4 #(= 2 (mod % 3))
+;;        [2 3 5 7 11 13 17 19 23]))
+;; (= ["this" "is" "a" "sentence"]
+;;    (__ 3 #(some #{\i} %)
+;;        ["this" "is" "a" "sentence" "i" "wrote"]))
+;; (= ["this" "is"]
+;;    (__ 1 #{"a"}
+;;        ["this" "is" "a" "sentence" "i" "wrote"]))
+(defn global-take-while [n p [x & xs]]
+  (let [n-next (if (p x)
+                 (dec n)
+                 n)]
+    (if (zero? n-next)
+      '()
+      (lazy-seq (cons x (global-take-while n-next p xs))))))
+
+;; 115. The Balance of N
+;; A balanced number is one whose component digits have the same sum on the left and right halves of the number. Write a function which accepts an integer n, and returns true iff n is balanced.
+;; (= true (__ 11))
+;; (= true (__ 121))
+;; (= false (__ 123))
+;; (= true (__ 0))
+;; (= false (__ 88099))
+;; (= true (__ 89098))
+;; (= true (__ 89089))
+;; (= (take 20 (filter __ (range)))
+;;    [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101])
+(defn the-balance-of-n [n]
+  (letfn [(sum [s]
+            (reduce + (map #(Character/getNumericValue %) s)))]
+    (let [s (.toString n)
+          half (quot (count s) 2)]
+      (=
+        (sum (take half s))
+        (sum (take-last half s))))))
