@@ -10,7 +10,7 @@
      (if (= i 1)
        (list (take-nth n s))
        (cons (take-nth n s) (reverse-interleave (rest s) n (dec i)))))
-    s n n))
+   s n n))
 
 ;; 44. Rotate Sequence
 ;; Write a function which can rotate a sequence in either direction.
@@ -416,3 +416,76 @@
       (=
         (sum (take half s))
         (sum (take-last half s))))))
+
+;; 132. Insert between two items
+;; Write a function that takes a two-argument predicate, a value, and a collection; and returns a new collection where the value is inserted between every two items that satisfy the predicate.
+;; (= '(1 :less 6 :less 7 4 3) (__ < :less [1 6 7 4 3]))
+;; (= '(2) (__ > :more [2]))
+;; (= [0 1 :x 2 :x 3 :x 4]  (__ #(and (pos? %) (< % %2)) :x (range 5)))
+;; (empty? (__ > :more ()))
+;; (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
+;;    (take 12 (->> [0 1]
+;;                  (iterate (fn [[a b]] [b (+ a b)]))
+;;                  (map first) ; fibonacci numbers
+;;                  (__ (fn [a b] ; both even or both odd
+;;                        (= (mod a 2) (mod b 2)))
+;;                      :same))))
+(defn insert-between-two-items [p v s]
+  (if (empty? s)
+    []
+    (flatten
+      (concat [(first s)]
+              (map #(if (apply p %)
+                     (vector v (second %))
+                     (second %))
+                   (partition 2 1 s))))))
+
+;; 137. Digits and bases
+;; Write a function which returns a sequence of digits of a non-negative number (first argument) in numerical system with an arbitrary base (second argument). Digits should be represented with their integer values, e.g. 15 would be [1 5] in base 10, [1 1 1 1] in base 2 and [15] in base 16.
+;; (= [1 2 3 4 5 0 1] (__ 1234501 10))
+;; (= [0] (__ 0 11))
+;; (= [1 0 0 1] (__ 9 2))
+;; (= [1 0] (let [n (rand-int 100000)](__ n n)))
+;; (= [16 18 5 24 15 1] (__ Integer/MAX_VALUE 42))
+(defn digits-and-bases [n base]
+  {:pre [(>= n 0)]}
+  (letfn [(step [r n base]
+            (if (zero? n)
+              r
+              (step (conj r (mod n base))
+                    (quot n base)
+                    base)))]
+    (if (zero? n)
+      '(0)
+      (step '() n base))))
+
+;; 144. Oscilrate
+;; Write an oscillating iterate: a function that takes an initial value and a variable number of functions. It should return a lazy sequence of the functions applied to the value in order, restarting from the first function after it hits the end.
+;; (= (take 3 (__ 3.14 int double)) [3.14 3 3.0])
+;; (= (take 5 (__ 3 #(- % 3) #(+ 5 %))) [3 0 5 2 7])
+;; (= (take 12 (__ 0 inc dec inc dec inc)) [0 1 0 1 0 1 2 1 2 1 2 3])
+(defn oscilrate [v & fs]
+  (reductions (fn [v f] (f v)) v (cycle fs)))
+
+;; 158. Decurry
+;; Write a function that accepts a curried function of unknown arity n. Return an equivalent function of n arguments.
+;; (= 10 ((__ (fn [a]
+;;              (fn [b]
+;;                (fn [c]
+;;                  (fn [d]
+;;                    (+ a b c d))))))
+;;         1 2 3 4))
+;; (= 24 ((__ (fn [a]
+;;              (fn [b]
+;;                (fn [c]
+;;                  (fn [d]
+;;                    (* a b c d))))))
+;;         1 2 3 4))
+;; (= 25 ((__ (fn [a]
+;;              (fn [b]
+;;                (* a b))))
+;;         5 5))
+(defn decurry [f]
+  (fn [& args]
+    (reduce #(%1 %2) f args)))
+

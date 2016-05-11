@@ -96,20 +96,20 @@
   (is (= 6 (reduce intro-to-reduce 1 [2 3]))))
 
 (deftest recurring-theme-test
-  (is (= recurring-theme)
-      (loop [x 5
-             result []]
-        (if (> x 0)
-          (recur (dec x) (conj result (+ 2 x)))
-          result))))
+  (is (= recurring-theme
+         (loop [x 5
+                result []]
+           (if (> x 0)
+             (recur (dec x) (conj result (+ 2 x)))
+             result)))))
 
 (deftest rearranging-code-1-test
-  (is (= (rearranging-code-1 (sort (rest (reverse [2 5 4 1 3 6]))))))
-  (is (-> [2 5 4 1 3 6] (reverse) (rest) (sort) (rearranging-code-1)) 5))
+  (is (= (rearranging-code-1 (sort (rest (reverse [2 5 4 1 3 6]))))
+         (-> [2 5 4 1 3 6] (reverse) (rest) (sort) (rearranging-code-1)) 5)))
 
 (deftest rearranging-code-2-test
-  (is (= (rearranging-code-2 (map inc (take 3 (drop 2 [2 5 4 1 3 6]))))))
-  (is (->> [2 5 4 1 3 6] (drop 2) (take 3) (map inc) (rearranging-code-2)) 11))
+  (is (= (rearranging-code-2 (map inc (take 3 (drop 2 [2 5 4 1 3 6]))))
+         (->> [2 5 4 1 3 6] (drop 2) (take 3) (map inc) (rearranging-code-2)) 11)))
 
 (deftest a-nil-key-test
   (true? (a-nil-key :a {:a nil :b 2}))

@@ -203,6 +203,49 @@
   (is (= false (the-balance-of-n 88099)))
   (is (= true (the-balance-of-n 89098)))
   (is (= true (the-balance-of-n 89089)))
-  (is (= (take 20 (filter the-balance-of-n (range))))
-      [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101]))
+  (is (= (take 20 (filter the-balance-of-n (range)))
+         [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101])))
+
+(deftest insert-between-two-items-test
+  (is (= '(1 :less 6 :less 7 4 3) (insert-between-two-items < :less [1 6 7 4 3])))
+  (is (= '(2) (insert-between-two-items > :more [2])))
+  (is (= [0 1 :x 2 :x 3 :x 4] (insert-between-two-items #(and (pos? %) (< % %2)) :x (range 5))))
+  (is (empty? (insert-between-two-items > :more ())))
+  (is (= [0 1 :same 1 2 3 :same 5 8 13 :same 21]
+         (take 12 (->> [0 1]
+                       (iterate (fn [[a b]] [b (+ a b)]))
+                       (map first)                          ; fibonacci numbers
+                       (insert-between-two-items (fn [a b]  ; both even or both odd
+                                                   (= (mod a 2) (mod b 2)))
+                                                 :same))))))
+
+(deftest digits-and-bases-test
+  (is (= [1 2 3 4 5 0 1] (digits-and-bases 1234501 10)))
+  (is (= [0] (digits-and-bases 0 11)))
+  (is (= [1 0 0 1] (digits-and-bases 9 2)))
+  (is (= [1 0] (let [n (rand-int 100000)] (digits-and-bases n n))))
+  (is (= [16 18 5 24 15 1] (digits-and-bases Integer/MAX_VALUE 42))))
+
+(deftest oscilrate-test
+  (is (= (take 3 (oscilrate 3.14 int double)) [3.14 3 3.0]))
+  (is (= (take 5 (oscilrate 3 #(- % 3) #(+ 5 %))) [3 0 5 2 7]))
+  (is (= (take 12 (oscilrate 0 inc dec inc dec inc)) [0 1 0 1 0 1 2 1 2 1 2 3])))
+
+(deftest decurry-test
+  (is (= 10 ((decurry (fn [a]
+                        (fn [b]
+                          (fn [c]
+                            (fn [d]
+                              (+ a b c d))))))
+             1 2 3 4)))
+  (is (= 24 ((decurry (fn [a]
+                        (fn [b]
+                          (fn [c]
+                            (fn [d]
+                              (* a b c d))))))
+             1 2 3 4)))
+  (is (= 25 ((decurry (fn [a]
+                        (fn [b]
+                          (* a b))))
+             5 5))))
 
