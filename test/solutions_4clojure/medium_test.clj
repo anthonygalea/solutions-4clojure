@@ -164,6 +164,16 @@
   (is (= (into-camel-case "multi-word-key") "multiWordKey"))
   (is (= (into-camel-case "leaveMeAlone") "leaveMeAlone")))
 
+(deftest generating-k-combinations-test
+  (is (= (generating-k-combinations 1 #{4 5 6}) #{#{4} #{5} #{6}}))
+  (is (= (generating-k-combinations 10 #{4 5 6}) #{}))
+  (is (= (generating-k-combinations 2 #{0 1 2}) #{#{0 1} #{0 2} #{1 2}}))
+  (is (= (generating-k-combinations 3 #{0 1 2 3 4}) #{#{0 1 2} #{0 1 3} #{0 1 4} #{0 2 3} #{0 2 4}
+                                                      #{0 3 4} #{1 2 3} #{1 2 4} #{1 3 4} #{2 3 4}}))
+  (is (= (generating-k-combinations 4 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a "abc" "efg"}}))
+  (is (= (generating-k-combinations 2 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a} #{[1 2 3] "abc"} #{[1 2 3] "efg"}
+                                                                   #{:a "abc"} #{:a "efg"} #{"abc" "efg"}})))
+
 (deftest identify-keys-and-values-test
   (is (= {} (identify-keys-and-values [])))
   (is (= {:a [1]} (identify-keys-and-values [:a 1])))
@@ -206,6 +216,11 @@
   (is (= (take 20 (filter the-balance-of-n (range)))
          [0 1 2 3 4 5 6 7 8 9 11 22 33 44 55 66 77 88 99 101])))
 
+(deftest prime-sandwich-test
+  (is (= false (prime-sandwich? 4)))
+  (is (= true (prime-sandwich? 563)))
+  (is (= 1103 (nth (filter prime-sandwich? (range)) 15))))
+
 (deftest insert-between-two-items-test
   (is (= '(1 :less 6 :less 7 4 3) (insert-between-two-items < :less [1 6 7 4 3])))
   (is (= '(2) (insert-between-two-items > :more [2])))
@@ -230,6 +245,18 @@
   (is (= (take 3 (oscilrate 3.14 int double)) [3.14 3 3.0]))
   (is (= (take 5 (oscilrate 3 #(- % 3) #(+ 5 %))) [3 0 5 2 7]))
   (is (= (take 12 (oscilrate 0 inc dec inc dec inc)) [0 1 0 1 0 1 2 1 2 1 2 3])))
+
+(deftest the-big-divide-test
+  (is (= 0 (the-big-divide 3 17 11)))
+  (is (= 23 (the-big-divide 10 3 5)))
+  (is (= 233168 (the-big-divide 1000 3 5)))
+  (is (= "2333333316666668" (str (the-big-divide 100000000 3 5))))
+  (is (= "110389610389889610389610"
+         (str (the-big-divide (* 10000 10000 10000) 7 11))))
+  (is (= "1277732511922987429116"
+         (str (the-big-divide (* 10000 10000 10000) 757 809))))
+  (is (= "4530161696788274281"
+         (str (the-big-divide (* 10000 10000 1000) 1597 3571)))))
 
 (deftest decurry-test
   (is (= 10 ((decurry (fn [a]

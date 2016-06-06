@@ -331,6 +331,27 @@
           (map clojure.string/capitalize (rest split)))))
     s))
 
+;; 103. Generating k-combinations
+;; Given a sequence S consisting of n elements generate all k-combinations of S, i. e. generate all possible sets consisting of k distinct elements taken from S. The number of k-combinations for a sequence is equal to the binomial coefficient.
+;; (= (__ 1 #{4 5 6}) #{#{4} #{5} #{6}})
+;; (= (__ 10 #{4 5 6}) #{})
+;; (= (__ 2 #{0 1 2}) #{#{0 1} #{0 2} #{1 2}})
+;; (= (__ 3 #{0 1 2 3 4}) #{#{0 1 2} #{0 1 3} #{0 1 4} #{0 2 3} #{0 2 4}
+;;                          #{0 3 4} #{1 2 3} #{1 2 4} #{1 3 4} #{2 3 4}})
+;; (= (__ 4 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a "abc" "efg"}})
+;; (= (__ 2 #{[1 2 3] :a "abc" "efg"}) #{#{[1 2 3] :a} #{[1 2 3] "abc"} #{[1 2 3] "efg"}
+;;                                       #{:a "abc"} #{:a "efg"} #{"abc" "efg"}})
+(defn generating-k-combinations [k s]
+  (set
+    (cond
+      (> k (count s)) []
+      (= k 1)         (reduce #(concat %1 #{#{%2}}) #{} s)
+      :else           (->> (reduce #(concat %1
+                                            (map (fn [e] (set (conj e %2))) %1))
+                                   #{#{}}
+                                   s)
+                           (filter #(= k (count %)))))))
+
 
 ;; 105. Identify keys and values
 ;; Given an input sequence of keywords and numbers, create a map such that each key in the map is a keyword, and the value is a sequence of all the numbers (if any) between it and the next keyword in the sequence.
@@ -417,6 +438,25 @@
         (sum (take half s))
         (sum (take-last half s))))))
 
+;; 116. Prime Sandwich
+;; A balanced prime is a prime number which is also the mean of the primes directly before and after it in the sequence of valid primes. Create a function which takes an integer n, and returns true iff it is a balanced prime.
+;; (= false (__ 4))
+;; (= true (__ 563))
+;; (= 1103 (nth (filter __ (range)) 15))
+(defn prime-sandwich? [n]
+  (letfn [(prime? [n]
+            (and
+              (> n 1)
+              (not-any? #(zero? (mod n %)) (range 2 n))))]
+    (and
+      (> n 2)
+      (prime? n)
+      (let [primes (lazy-seq (filter prime? (range)))
+            primes-before (take-while #(<= % n) primes)
+            prime-before (last (butlast primes-before))
+            prime-after (first (drop (count primes-before) primes))]
+         (= n (/ (+ prime-before prime-after) 2))))))
+
 ;; 132. Insert between two items
 ;; Write a function that takes a two-argument predicate, a value, and a collection; and returns a new collection where the value is inserted between every two items that satisfy the predicate.
 ;; (= '(1 :less 6 :less 7 4 3) (__ < :less [1 6 7 4 3]))
@@ -466,6 +506,30 @@
 ;; (= (take 12 (__ 0 inc dec inc dec inc)) [0 1 0 1 0 1 2 1 2 1 2 3])
 (defn oscilrate [v & fs]
   (reductions (fn [v f] (f v)) v (cycle fs)))
+
+;; 148. The Big Divide
+;; Write a function which calculates the sum of all natural numbers under n (first argument) which are evenly divisible by at least one of a and b (second and third argument). Numbers a and b are guaranteed to be coprimes.
+;; Note: Some test cases have a very large n, so the most obvious solution will exceed the time limit.
+;; (= 0 (the-big-divide 3 17 11)))
+;; (= 23 (the-big-divide 10 3 5)))
+;; (= 233168 (the-big-divide 1000 3 5)))
+;; (= "2333333316666668" (str (the-big-divide 100000000 3 5))))
+;; (= "110389610389889610389610"
+;;     (str (the-big-divide (* 10000 10000 10000) 7 11))
+;; (= "1277732511922987429116"
+;;     (str (the-big-divide (* 10000 10000 10000) 757 809)
+;; (= "4530161696788274281"
+;;     (str (the-big-divide (* 10000 10000 1000) 1597 3571))))
+(defn the-big-divide [n a b]
+  (letfn [(cnt [x]
+            (quot (dec n) x))
+          (sum [x]
+            (/ (*' (cnt x) (+ x (* x (cnt x)))) 2))]
+    (-
+      (+
+        (sum a)
+        (sum b))
+      (sum (* a b)))))
 
 ;; 158. Decurry
 ;; Write a function that accepts a curried function of unknown arity n. Return an equivalent function of n arguments.
