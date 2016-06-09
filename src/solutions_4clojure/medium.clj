@@ -457,6 +457,29 @@
             prime-after (first (drop (count primes-before) primes))]
          (= n (/ (+ prime-before prime-after) 2))))))
 
+;; 121. Universal Computation Engine
+;; Given a mathematical formula in prefix notation, return a function that calculates the value of the formula. The formula can contain nested calculations using the four basic mathematical operators, numeric constants, and symbols representing variables. The returned function has to accept a single parameter containing the map of variable names to their values.
+;; (= 2 ((__ '(/ a b))
+;;        '{b 8 a 16}))
+;; (= 8 ((__ '(+ a b 2))
+;;        '{a 2 b 4}))
+;; (= [6 0 -4]
+;;    (map (__ '(* (+ 2 a)
+;;                 (- 10 b)))
+;;         '[{a 1 b 8}
+;;           {b 5 a -2}
+;;           {a 2 b 11}]))
+;; (= 1 ((__ '(/ (+ x 2)
+;;               (* 3 (+ y 1))))
+;;        '{x 4 y 1}))
+(defn universal-computation-engine [formula]
+  (fn [parameters]
+    (letfn [(evaluate [x]
+              (cond
+                (seq? x) (apply ({'/ / '+ + '- - '* *} (first x)) (map evaluate (rest x)))
+                (number? x) x))]
+      (evaluate (clojure.walk/prewalk-replace parameters formula)))))
+
 ;; 132. Insert between two items
 ;; Write a function that takes a two-argument predicate, a value, and a collection; and returns a new collection where the value is inserted between every two items that satisfy the predicate.
 ;; (= '(1 :less 6 :less 7 4 3) (__ < :less [1 6 7 4 3]))
@@ -552,4 +575,20 @@
 (defn decurry [f]
   (fn [& args]
     (reduce #(%1 %2) f args)))
+
+;; 171. Intervals
+;; Write a function that takes a sequence of integers and returns a sequence of "intervals". Each interval is a
+;; vector of two integers, start and end, such that all integers between start and end (inclusive) are contained in
+;; the input sequence.
+;; (= (__ [1 2 3]) [[1 3]])
+;; (= (__ [10 9 8 1 2 3]) [[1 3] [8 10]])
+;; (= (__ [1 1 1 1 1 1 1]) [[1 1]])
+;; (= (__ []) [])
+;; (= (__ [19 4 17 1 3 10 2 13 13 2 16 4 2 15 13 9 6 14 2 11])
+;;    [[1 4] [6 6] [9 11] [13 17] [19 19]])
+(defn intervals [s]
+  (vec
+    (map #(vec [(first %) (last %)])
+         (map #(map last %)
+              (partition-by #(apply - %) (map-indexed vector (sort (distinct s))))))))
 

@@ -221,6 +221,21 @@
   (is (= true (prime-sandwich? 563)))
   (is (= 1103 (nth (filter prime-sandwich? (range)) 15))))
 
+(deftest universal-computation-engine-test
+  (is (= 2 ((universal-computation-engine '(/ a b))
+            '{b 8 a 16})))
+  (is (= 8 ((universal-computation-engine '(+ a b 2))
+            '{a 2 b 4})))
+  (is (= [6 0 -4]
+         (map (universal-computation-engine '(* (+ 2 a)
+                                                (- 10 b)))
+              '[{a 1 b 8}
+                {b 5 a -2}
+                {a 2 b 11}])))
+  (is (= 1 ((universal-computation-engine '(/ (+ x 2)
+                                              (* 3 (+ y 1))))
+            '{x 4 y 1}))))
+
 (deftest insert-between-two-items-test
   (is (= '(1 :less 6 :less 7 4 3) (insert-between-two-items < :less [1 6 7 4 3])))
   (is (= '(2) (insert-between-two-items > :more [2])))
@@ -275,4 +290,12 @@
                         (fn [b]
                           (* a b))))
              5 5))))
+
+(deftest intervals-test
+  (is (= (intervals [1 2 3]) [[1 3]]))
+  (is (= (intervals [10 9 8 1 2 3]) [[1 3] [8 10]]))
+  (is (= (intervals [1 1 1 1 1 1 1]) [[1 1]]))
+  (is (= (intervals []) []))
+  (is (= (intervals [19 4 17 1 3 10 2 13 13 2 16 4 2 15 13 9 6 14 2 11])
+         [[1 4] [6 6] [9 11] [13 17] [19 19]])))
 
